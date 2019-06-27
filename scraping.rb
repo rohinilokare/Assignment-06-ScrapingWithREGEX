@@ -2,21 +2,19 @@ require 'rubygems'
 require 'nokogiri'
 require 'open-uri'
 
-
 class Scraping
-
 	def initialize()
 		@category_object = Nokogiri::HTML(open('https://www.allrecipes.com/').read)
 		@category_object = @category_object.to_s
-		all_receipe_div
+		all_recipes_page_div
 	end
 
-	def all_receipe_div
+	def all_recipes_page_div
 		@category_object.scan(/(?m)<div\sid=\"insideScroll\"\sclass=\"grid\sslider\">.*?<\/div>/) do |match|
 		@single_div = match.to_s
 		@single_div = @single_div.to_s
-		puts @single_div
-		puts '-----------------------------------------------------------------------------'
+		#puts @single_div
+		#puts '-----------------------------------------------------------------------------'
 		end
 		category_hash
 	end
@@ -24,7 +22,6 @@ class Scraping
 	def category_href
 		@href_array =Array.new
 		hrefs = @single_div.scan(/href="(.*?)"/)
-		#puts "hrefs: #{hrefs}"
 		for link in hrefs do
 			@href = link[0].to_s
 			@href_array.push(@href)
@@ -58,40 +55,56 @@ class Scraping
 		puts "**************************************************"
 		puts "@category_hash: #{@category_hash}"
 		puts "**************************************************"
-		sub_category
+		category_view_page
 	end
 
-def sub_category
-			@sub_category_viewpage_array = Array.new
-			for i in @category_name_array
-				#puts @category_hash[i]
-				html_data =	open(@category_hash[i]).read
-				@category_object1 = Nokogiri::HTML(html_data)
-				@category_object1 = @category_object1.to_s
-				@sub_category_viewpage_array.push(@category_object1)
-			end
-			#puts @sub_category_viewpage_array
-			sub_category_div
-end
-
-def sub_category_div
-		@sub_category_section_array = Array.new
-		for view_source_page in @sub_category_viewpage_array
-				view_source_page.scan(/(?m)<\s*section\s*id=\"fixedGrid.*>.*?<\s*\/\s*section>/) do |match|
-					@section = match.to_s
-					@sub_category_section_array.push(@section)
-					#puts "@category_section: #{@section}"
-					puts '-----------------------------------------------------------------------------'
-				end
+	def category_view_page
+		@sub_category_viewpage_array = Array.new
+		for i in @category_name_array
+			html_data =	open(@category_hash[i]).read
+			@category_view_object = Nokogiri::HTML(html_data)
+			@category_view_object = @category_view_object.to_s
+			@sub_category_viewpage_array.push(@category_view_object)
 		end
-end
+		category_view_div
+	end
 
-
-def sub_category_name
-			for section in sub_category_section_array
-				subcategory_name = section.scan()
+	def category_view_div
+		@category_view__section_array = Array.new
+		for view_source_page in @sub_category_viewpage_array
+			view_source_page.scan(/<span\s*class=\"fixed-recipe-card__title-link\">(.*?)<\/span>/) do |match|
+				@recipename = match.to_s
+				@category_view__section_array.push(@recipename)
+				puts "@recipe name: #{@recipename}"
+				puts '-----------------------------------------------------------------------------'
 			end
-end
+		end
+	end
+
+
+	def recipes_name
+		@recipe_name_array = Array.new
+			for section in @category_view__section_array
+				receipe_names = section.scan(/<span\s*class=\"fixed-recipe-card__title-link\">(.*?)<\/span>/)
+				for names in receipe_names do
+					@name = names[0].to_s
+					@recipe_name_array.push(@name)
+				end
+			end
+	end
+
+	def recipe_href
+		@recipe_name_array = Array.new
+		for section in @category_view__section_array
+			receipe_names = section.scan(/href="(.*?)"/)
+			for names in receipe_names do
+				@name = names[0].to_s
+				@recipe_name_array.push(@name)
+			end
+		end
+	end
+
+
 end
 
 @scraping = Scraping.new
