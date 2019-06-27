@@ -1,5 +1,5 @@
 #!/usr/bin/ruby
-require '/home/rohini/Documents/treeni/Assignment-06-Regex/Scraping.rb'
+require './scraping.rb'
 require 'sqlite3'
 
 class ScrapDatabase
