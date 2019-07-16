@@ -1,28 +1,30 @@
 #!/usr/bin/ruby
-require './scraping.rb'
+require '/home/rohini/Git/Project/Assignment-06-ScrapingWithREGEX/scraping.rb'
 require 'sqlite3'
+require 'rubygems'
+require 'nokogiri'
+require 'open-uri'
 
 class ScrapDatabase
+	attr_accessor :scrap
 
-    db = SQLite3::Database.open "test.db"
-    db.execute "CREATE TABLE IF NOT EXISTS FoodCategory(Id INTEGER PRIMARY KEY,
-        CategoryName TEXT, Link VARCHAR)"
+	def initialize
+		@scrap = Scraping.new
+		@db = SQLite3::Database.new 'category.db'
+		categories_table
+	end
 
-    db.execute "INSERT INTO FoodCategory VALUES(1,'Audi','http')"
-    db.execute "INSERT INTO FoodCategory VALUES(2,'Mercedes','http')"
-    db.execute "INSERT INTO FoodCategory VALUES(3,'Skoda','http')"
-    db.execute "INSERT INTO FoodCategory VALUES(4,'Volvo','http')"
-    db.execute "INSERT INTO FoodCategory VALUES(5,'Bentley','http')"
-    db.execute "INSERT INTO FoodCategory VALUES(6,'Citroen','http')"
-    db.execute "INSERT INTO FoodCategory VALUES(7,'Hummer','http')"
-    db.execute "INSERT INTO FoodCategory VALUES(8,'Volkswagen','http')"
+	def categories_table
+		@db = SQLite3::Database.new 'category.db'
+		@db.execute("DROP TABLE IF EXISTS category")
+		@db.execute "CREATE TABLE category(Id INTEGER PRIMARY KEY, Name TEXT,  Href TEXT)"
 
-rescue SQLite3::Exception => e
-
-    puts "Exception occurred"
-    puts e
-
-ensure
-    db.close if db
+		@scrap.category_hash.each do |key , value|
+				@db.execute("INSERT INTO category(Name, Href) VALUES('#{key}',  '#{value}')")
+		end
+	end
 
 end
+
+db = ScrapDatabase.new
+# db.categories_table

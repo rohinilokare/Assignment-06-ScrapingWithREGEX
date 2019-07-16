@@ -1,10 +1,13 @@
 require 'rubygems'
 require 'nokogiri'
 require 'open-uri'
+require 'sqlite3'
+
 
 class Scraping
+	attr_accessor :category_hash
 
-	def initialize()
+	def initialize
 		@category_object = Nokogiri::HTML(open('https://www.allrecipes.com/').read)
 		@category_object = @category_object.to_s
 		all_recipes_page_div
@@ -14,7 +17,7 @@ class Scraping
 		@category_object.scan(/(?m)<div\sid=\"insideScroll\"\sclass=\"grid\sslider\">.*?<\/div>/) do |match|
 		@single_div = match.to_s
 		end
-		category_hash
+		category_hash_fun
 	end
 
 	def category_href
@@ -35,7 +38,7 @@ class Scraping
 			end
 	end
 
-	def category_hash
+	def category_hash_fun
 		category_href
 		category_name
 		@category_hash = Hash.new
@@ -47,7 +50,7 @@ class Scraping
 		# puts "---------------------------------------------------"
 		# puts "@category_hash: #{@category_hash}"
 		# puts "---------------------------------------------------"
-		category_view_page
+		 category_view_page
 	end
 
 	def category_view_page
@@ -100,9 +103,9 @@ class Scraping
 			recipe_hrefs = section.scan(/<h3\s*class=\"fixed-recipe-card__h3\">\s*<a\s*href=\"(.*?)\"/)
 			count = 0
 			for href in recipe_hrefs do
-				@hrefs = href[0].to_s
+				hrefs = href[0].to_s
 				if(count <10)
-				@recipe_href_array.push(@hrefs)
+				@recipe_href_array.push(hrefs)
 				end
 				count = count + 1
 			end
@@ -111,7 +114,7 @@ class Scraping
 		@recipe_href_array.each_with_index do |value, index|
 			puts "#{index}: #{value}"
 			end
-		#recipe_hash             //systemStackError ---stack level too deep
+		 # recipe_hash
 		recipe_ingredients_view
 	end
 
@@ -119,10 +122,10 @@ class Scraping
 		recipes_href
 		recipes_name
 		@recipe_hash = Hash.new
-		recipe_name = 0
+		recipe_name_index = 0
 		@recipe_href_array.each do |href|
-			@recipe_hash[@recipe_name_array[recipe_name]] =  href
-			recipe_name = recipe_name +1
+			@recipe_hash[@recipe_name_index_array[recipe_name_index]] =  href
+			recipe_name_index = recipe_name_index +1
 		end
 		puts "-----------------Recipe Hash----------------------------------"
 		@recipe_hash.each do |key, value|
@@ -134,37 +137,30 @@ class Scraping
 	def recipe_ingredients_view
 		@ingredient_view_page_array =Array.new
 		for i in @recipe_href_array
-			# puts i
-			# puts '-------------'
-			html_data1 =open(i).read
-			@ingredient_view_page = Nokogiri::HTML(html_data1)
+			@ingredient_view_page = Nokogiri::HTML(open(i).read)
 			@ingredient_view_page = @ingredient_view_page.to_s
 			@ingredient_view_page_array.push(@ingredient_view_page)
-			# if(i == 0)
-			# puts '----------'
-			# #puts @ingredient_view_page
-	  # 	end
 		end
 		recipe_ingredients_list
 	end
 
 	def recipe_ingredients_list
-		@ingredients_name_array = Array.new
+		@ingredients_name_array = Hash.new
 		for view_page in @ingredient_view_page_array
 			@ingredients_names = view_page.scan(/<li\s*class=\"checkList__line\">.*?\s*<label.*?title=\"(.*?)\"/)
-			puts @ingredients_names
+			# puts @ingredients_names
 			for names in @ingredients_names do
 				@name = names[0].to_s
-				@ingredients_name_array.push(@name)
+				# @ingredients_name_array.push(@name)
 			end
 		end
-		puts '----------ingredients List------------------'
-		@ingredients_name_array.each_with_index do |value, index|
-		puts "#{index}: #{value}"
+		# puts '----------ingredients List------------------'
+		# @ingredients_name_array.each_with_index do |value, index|
+		# puts "#{index}: #{value}"
+		# end
 	end
- end
 
 end
 
-@scraping = Scraping.new
-
+# @scraping = Scraping.new
+# scrapdata = ScrapDatabase.new
