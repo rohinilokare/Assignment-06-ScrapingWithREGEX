@@ -7,6 +7,7 @@ class Scraping
 	attr_accessor :category_hash, :recipe_name_array, :recipe_href_array, :ingredients_name_hash
 
 	def initialize
+		puts 'initializ'
 		@category_object = Nokogiri::HTML(open('https://www.allrecipes.com/').read)
 		@category_object = @category_object.to_s
 		all_recipes_page_div
@@ -79,7 +80,7 @@ class Scraping
 			for names in receipe_names do
 				@name = names[0].to_s
 				if(count <10)
-					@recipe_name_array.push(@name)
+					@recipe_name_array.push(@name.gsub("'",""))
 					count = count +1
 				end
 			end
@@ -88,7 +89,6 @@ class Scraping
 	end
 
 	def recipes_link
-		# @category_view__div
 		@recipe_href_array = Array.new
 		for section in @category_view__section_array
 			recipe_hrefs = section.scan(/<h3\s*class=\"fixed-recipe-card__h3\">\s*<a\s*href=\"(.*?)\"/)
@@ -101,7 +101,8 @@ class Scraping
 				count = count + 1
 			end
 		end
-		recipe_view_sourse_page
+		# puts @recipe_href_array
+		# recipe_view_sourse_page
 	end
 
 	def recipe_view_sourse_page
@@ -148,48 +149,42 @@ class Scraping
 		recipe_preparation_time
 	end
 
-		def recipe_preparation_time
+	def recipe_preparation_time
 		@recipe_preparation_time_array = Array.new
-			for view_page in @recipe_view_sourse_page_array
-				@preparation_times = view_page.scan(/<li\s*class=\"prepTime__item\"\s*aria-label=\"Prep\s*time:(.*?)\"/)
-				for times in @preparation_times do
-					time = times[0].to_s
-					@recipe_preparation_time_array.push(time)
-				end
+		for view_page in @recipe_view_sourse_page_array
+			@preparation_times = view_page.scan(/<li\s*class=\"prepTime__item\"\s*aria-label=\"Prep\s*time:(.*?)\"/)
+			for times in @preparation_times do
+				time = times[0].to_s
+				@recipe_preparation_time_array.push(time)
 			end
-			puts '----prep time ----------'
-			puts @recipe_preparation_time_array
-			recipe_cook_time
 		end
+		recipe_cook_time
+	end
 
-		def recipe_cook_time
+	def recipe_cook_time
 		@recipe_cook_time_array = Array.new
-			for view_page in @recipe_view_sourse_page_array
-				@cook_times = view_page.scan(/<li\s*class=\"prepTime__item\"\s*aria-label=\"Cook\s*time:(.*?)\"/)
-				for times in @cook_times do
-					time = times[0].to_s
-					@recipe_cook_time_array.push(time)
-				end
+		for view_page in @recipe_view_sourse_page_array
+			@cook_times = view_page.scan(/<li\s*class=\"prepTime__item\"\s*aria-label=\"Cook\s*time:(.*?)\"/)
+			for times in @cook_times do
+				time = times[0].to_s
+				@recipe_cook_time_array.push(time)
 			end
-			puts '--------cook time-----'
-			puts @recipe_cook_time_array
-			recipe_ready_in_time
 		end
+		recipe_ready_in_time
+	end
 
-		def recipe_ready_in_time
+	def recipe_ready_in_time
 		@recipe_ready_in_time_array = Array.new
-			for view_page in @recipe_view_sourse_page_array
-				@ready_in_times = view_page.scan(/<li\s*class=\"prepTime__item\"\s*aria-label=\"Ready\s*in(.*?)\"/)
-				for times in @ready_in_times do
-					time = times[0].to_s
-					@recipe_ready_in_time_array.push(time)
-				end
+		for view_page in @recipe_view_sourse_page_array
+			@ready_in_times = view_page.scan(/<li\s*class=\"prepTime__item\"\s*aria-label=\"Ready\s*in(.*?)\"/)
+			for times in @ready_in_times do
+				time = times[0].to_s
+				@recipe_ready_in_time_array.push(time)
 			end
-			puts '-------ready in---------'
-			puts @recipe_ready_in_time_array
 		end
+	end
 
 end
 
-@scraping = Scraping.new
+ @scraping = Scraping.new
 # scrapdata = ScrapDatabase.new
