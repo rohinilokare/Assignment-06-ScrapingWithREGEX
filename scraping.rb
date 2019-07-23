@@ -7,10 +7,6 @@ class Scraping
 	attr_accessor :category_hash, :recipe_name_array, :recipe_href_array, :ingredients_list_array , :recipe_preparation_time_array , :recipe_cook_time_array , :recipe_ready_in_time_array ,:recipe_directions_array
 
 	def initialize
-		puts '********************************************************'
-      puts 'start excution'
-      puts Time.now
-    puts '********************************************************'
 		puts 'initialize'
 		@category_object = Nokogiri::HTML(open('https://www.allrecipes.com/').read)
 		@category_object = @category_object.to_s
@@ -136,7 +132,7 @@ class Scraping
 			end
 				@ingredients_list_array.push(ingredients_array)
 		end
-		 recipe_directions_steps
+			recipe_directions_steps
 	end
 
 	def recipe_directions_steps
@@ -159,18 +155,11 @@ class Scraping
 		@recipe_preparation_time_array = Array.new
 		for view_page in @recipe_view_sourse_page_array
 		@preparation_times = view_page.scan(/<li\s*class=\"prepTime__item\"\s*aria-label=\"Prep\s*time:(.*?)\"/)
-			# for times in @preparation_times do
-			# 	puts times
-			# 	time = times[0].to_s
-				# if (@preparation_times[0][0])
-				# 	@recipe_preparation_time_array.push(@preparation_times[0][0].to_s)
-				# else
-					@recipe_preparation_time_array.push(@preparation_times[0].to_s)
-				# end
-			# end
-		end
-		@recipe_preparation_time_array.each_with_index do |value, index|
-		puts "#{index}: #{value}"
+				 if (!@preparation_times[0].nil?)
+				 	@recipe_preparation_time_array.push(@preparation_times[0][0].to_s)
+				 else
+					@recipe_preparation_time_array.push(nil)
+				 end
 		end
 		recipe_cook_time
 	end
@@ -180,9 +169,10 @@ class Scraping
 		@recipe_cook_time_array = Array.new
 		for view_page in @recipe_view_sourse_page_array
 			@cook_times = view_page.scan(/<li\s*class=\"prepTime__item\"\s*aria-label=\"Cook\s*time:(.*?)\"/)
-			for times in @cook_times do
-				time = times[0].to_s
-				@recipe_cook_time_array.push(time)
+			if (!@cook_times[0].nil?)
+				@recipe_cook_time_array.push(@cook_times[0][0].to_s)
+			else
+				@recipe_cook_time_array.push(nil)
 			end
 		end
 		recipe_ready_in_time
@@ -193,17 +183,12 @@ class Scraping
 		@recipe_ready_in_time_array = Array.new
 		for view_page in @recipe_view_sourse_page_array
 			@ready_in_times = view_page.scan(/<li\s*class=\"prepTime__item\"\s*aria-label=\"Ready\s*in(.*?)\"/)
-			for times in @ready_in_times do
-				time = times[0].to_s
-				@recipe_ready_in_time_array.push(time)
-			end
+				if (!@ready_in_times[0].nil?)
+					@recipe_ready_in_time_array.push(@ready_in_times[0][0].to_s)
+				else
+					@recipe_ready_in_time_array.push(nil)
+				end
 		end
-			puts '********************************************************'
-      puts 'end excution'
-      puts Time.now
-    puts '********************************************************'
 	end
-
 end
- @scraping = Scraping.new
-# scrapdata = ScrapDatabase.new
+

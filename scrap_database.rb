@@ -1,5 +1,5 @@
 #!/usr/bin/ruby
-require '/home/rohini/Git/Project/Assignment-06-ScrapingWithREGEX/scraping.rb'
+require './scraping.rb'
 require 'sqlite3'
 require 'rubygems'
 require 'nokogiri'
@@ -25,15 +25,32 @@ class ScrapDatabase
 		 recipes_table
 	end
 
- 	def recipes_table
- 		puts 'Creating Recipe Table'
- 		puts 'Inserting recipe name with primary key ID'
+	def recipes_table
+		puts 'Creating Recipe Table'
+		puts 'Inserting recipe name with primary key ID'
 		@db.execute("DROP TABLE IF EXISTS recipes")
-		@db.execute "CREATE TABLE recipes(Id INTEGER PRIMARY KEY, RecipeName TEXT,RecipeLink TEXT,PraparationTime TEXT,CookTime TEXT,ReadyIn TEXT,Ingredients array ,Directions array)"
+		@db.execute "CREATE TABLE recipes(Id INTEGER PRIMARY KEY, RecipeName TEXT,RecipeLink TEXT,PraparationTime TEXT,CookTime TEXT,ReadyIn TEXT,CategoryID INTEGER,FOREIGN KEY(CategoryID) REFERENCES category_table(id))"
 		@scrap.recipe_name_array.each do |recipe_name|
 			@db.execute("INSERT INTO recipes(RecipeName) VALUES('#{recipe_name}');")
 		end
-		add_recipe_link
+		add_category_id
+	end
+
+	def add_category_id
+		puts 'Inserting category id into recipe table'
+		count = 1
+		id = 1
+		@scrap.recipe_name_array.each do |r_name |
+			if(count == 10)
+				count = 1
+			end
+				@db.execute("UPDATE recipes SET CategoryID = '#{id}';")
+				count = count + 1
+				if(count == 10)
+					id = id + 1
+				end
+		end
+	add_recipe_link
 	end
 
 	def add_recipe_link
@@ -73,24 +90,32 @@ class ScrapDatabase
 			@db.execute("UPDATE recipes SET ReadyIn = '#{ready_in_time}' WHERE Id='#{id}';")
 			id = id +1
 		end
-		add_recipe_ingredients
+		recipe_ingredients
 	end
 
-	def add_recipe_ingredients
-		puts 'Inserting Recipe ingredients into recipe table'
+	def recipe_ingredients
+		puts 'Creating Recipe Ingredients Table'
+		@db.execute("DROP TABLE IF EXISTS RecipeIngredients")
+		@db.execute "CREATE TABLE RecipeIngredients(Id INTEGER PRIMARY KEY, Ingredients TEXT,RecipeId INTEGER,FOREIGN KEY(RecipeId) REFERENCES recipes(id))"
 		id = 1
 		@scrap.ingredients_list_array.each do |ingredients |
-			@db.execute("UPDATE recipes SET Ingredients = '#{ingredients.to_s}' WHERE Id='#{id}';")
+			ingredients.each do |ingrgredient |
+			@db.execute("INSERT INTO RecipeIngredients(Ingredients,RecipeId) VALUES('#{ingrgredient}','#{id}');")
+			end
 			id = id +1
 		end
-		 add_recipe_directions
+		 recipe_directions
 	end
 
-	def add_recipe_directions
-		puts 'Inserting Recipe directions into recipe table'
+	def recipe_directions
+		puts 'Creating Recipe Directions Table'
+		@db.execute("DROP TABLE IF EXISTS RecipeDirections")
+		@db.execute "CREATE TABLE RecipeDirections(Id INTEGER PRIMARY KEY, Directions TEXT,RecipeId INTEGER,FOREIGN KEY(RecipeId) REFERENCES recipes(id))"
 		id = 1
 		@scrap.recipe_directions_array.each do |directions |
-			@db.execute("UPDATE recipes SET Directions = '#{directions}' WHERE Id='#{id}';")
+						directions.each do |direction |
+			@db.execute("INSERT INTO RecipeDirections(Directions,RecipeId) VALUES('#{direction}','#{id}');")
+			end
 			id = id +1
 		end
 	end
@@ -98,4 +123,4 @@ class ScrapDatabase
 end
 
 db = ScrapDatabase.new
-# db.categories_table
+
